@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	pb "github.com/OpenPeeDeeP/ChessClock-CLI/chessclock"
 	"github.com/spf13/cobra"
 )
@@ -36,6 +39,14 @@ func tagsCmdRun(cmd *cobra.Command, args []string) error {
 		Date: date,
 	})
 	if err != nil {
+		if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+			if len(args) < 1 {
+				tagsLogger.Error().Msg("No task started for today")
+			} else {
+				tagsLogger.Error().Msg("No task for that date")
+			}
+			return err
+		}
 		tagsLogger.Error().Err(err).Msg("Could not get a list of tags")
 		return err
 	}

@@ -21,18 +21,18 @@ var startCmd = &cobra.Command{
 
 var (
 	startDescription string
-	duration         string
+	startDuration    string
 )
 
 func init() {
 	startCmd.Flags().StringVarP(&startDescription, "description", "d", "", "Description for the task")
-	startCmd.Flags().StringVarP(&duration, "prior", "p", "", "Start a task that was started in the past (IE 30m)")
+	startCmd.Flags().StringVarP(&startDuration, "prior", "p", "", "Start a task that was started in the past (IE 30m)")
 }
 
 func startCmdRun(cmd *cobra.Command, args []string) error {
 	t := time.Now()
-	if duration != "" {
-		dur, _ := time.ParseDuration(duration)
+	if startDuration != "" {
+		dur, _ := time.ParseDuration(startDuration)
 		t = t.Add(-1 * dur)
 	}
 	_, err := client.Start(context.Background(), &pb.StartRequest{
@@ -59,8 +59,8 @@ func validateStartCmdArgs(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	if duration != "" {
-		if _, err := time.ParseDuration(duration); err != nil {
+	if startDuration != "" {
+		if _, err := time.ParseDuration(startDuration); err != nil {
 			startLogger.Error().Err(err).Msg("Unable to parse duration")
 			return err
 		}

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	pb "github.com/OpenPeeDeeP/ChessClock-CLI/chessclock"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +26,10 @@ var sheetsCmd = &cobra.Command{
 func sheetsCmdRun(cmd *cobra.Command, args []string) error {
 	sheets, err := client.ListTimeSheets(context.Background(), &pb.ListTimeSheetsRequest{})
 	if err != nil {
+		if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+			sheetsLogger.Error().Msg("No timesheets found")
+			return err
+		}
 		sheetsLogger.Error().Err(err).Msg("Could not get a list of time sheets")
 		return err
 	}

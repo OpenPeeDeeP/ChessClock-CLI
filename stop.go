@@ -29,9 +29,15 @@ func init() {
 }
 
 func stopCmdRun(cmd *cobra.Command, args []string) error {
+	var reason string
+	if len(args) > 0 {
+		reason = args[0]
+	} else {
+		reason = "break"
+	}
 	_, err := client.Stop(context.Background(), &pb.StopRequest{
 		Timestamp: time.Now().Unix(),
-		Reason:    reasons[strings.ToLower(args[0])],
+		Reason:    reasons[strings.ToLower(reason)],
 	})
 	if err != nil {
 		stopLogger.Error().Err(err).Msg("Could not stop the previous task")
@@ -41,20 +47,17 @@ func stopCmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func validateStopCmdArgs(cmd *cobra.Command, args []string) (err error) {
-	switch {
-	case len(args) > 1:
+	if len(args) > 1 {
 		err = errors.New("Too many arguments")
 		stopLogger.Error().Err(err).Msg("Incorrect Arguments")
 		return err
-	case len(args) < 1:
-		err = errors.New("Must sepcify a reason for stopping (eod, break, lunch)")
-		stopLogger.Error().Err(err).Msg("Incorrect Arguments")
-		return err
 	}
-	if _, ok := reasons[strings.ToLower(args[0])]; !ok {
-		err = errors.New("Reason given is not a valid reason (eod, break, lunch)")
-		stopLogger.Error().Err(err).Msg("Incorrect Arguments")
-		return err
+	if len(args) > 0 {
+		if _, ok := reasons[strings.ToLower(args[0])]; !ok {
+			err = errors.New("Reason given is not a valid reason (eod, break, lunch)")
+			stopLogger.Error().Err(err).Msg("Incorrect Arguments")
+			return err
+		}
 	}
 	return nil
 }
